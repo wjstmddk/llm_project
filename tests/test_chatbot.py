@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+import os
 from src.chatbot import Chatbot
 from src.config import Config
 
@@ -42,12 +43,14 @@ def test_chatbot_reset():
 
 
 def test_config_defaults():
-    import os
-    os.environ.pop("MODEL_NAME", None)
-    os.environ.pop("MAX_TOKENS", None)
-    os.environ.pop("TEMPERATURE", None)
+    env_overrides = {k: v for k, v in os.environ.items()}
+    env_overrides.pop("MODEL_NAME", None)
+    env_overrides.pop("MAX_TOKENS", None)
+    env_overrides.pop("TEMPERATURE", None)
 
-    config = Config()
-    assert config.MODEL_NAME == "gpt-4o-mini"
-    assert config.MAX_TOKENS == 1000
-    assert config.TEMPERATURE == 0.7
+    with patch.dict(os.environ, env_overrides, clear=True):
+        config = Config()
+        assert config.MODEL_NAME == "gpt-4o-mini"
+        assert config.MAX_TOKENS == 1000
+        assert config.TEMPERATURE == 0.7
+
